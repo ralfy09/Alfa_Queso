@@ -8,6 +8,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.alfaqueso.presentation.Dashboard.DashboardScreen
 import com.example.alfaqueso.presentation.cliente.ClienteScreen
 import com.example.alfaqueso.presentation.inventario.InventarioScreen
+import com.example.alfaqueso.presentation.login.LoginScreen
 import com.example.alfaqueso.presentation.pedido.PedidosScreen
 import com.example.alfaqueso.presentation.venta.VentasScreen
 
