@@ -69,10 +69,14 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.compose.material3)
     debugImplementation(libs.androidx.ui.tooling)
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     // Lifecycle Compose
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.2")
+
 
     // Room
     implementation("androidx.room:room-runtime:2.6.1")
