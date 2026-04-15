@@ -43,11 +43,30 @@ fun DashboardScreen(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet(modifier = Modifier.width(300.dp)) {
-                Column(modifier = Modifier.fillMaxHeight().background(Color.White)) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .background(MaterialTheme.colorScheme.surface)
+                ) {
                     // Cabecera del Menú
-                    Column(modifier = Modifier.fillMaxWidth().background(Color(0xFFFF9800)).padding(24.dp)) {
-                        Text("De Alfa Queso", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                        Text("Sistema de Gestión", color = Color.White.copy(alpha = 0.8f), fontSize = 14.sp)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.primary)
+                            .padding(24.dp)
+                    ) {
+                        Text(
+                            "De Alfa Queso",
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Text(
+                            "Sistema de Gestión",
+                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+                        )
+
                         Spacer(modifier = Modifier.height(16.dp))
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { onNavigateToPerfil(usuarioId ?: 0) }) {
                             Icon(Icons.Default.AccountCircle, contentDescription = null, tint = Color.White, modifier = Modifier.size(40.dp))
@@ -97,32 +116,62 @@ fun DashboardScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("De Alfa Queso", color = Color.White) },
+                    title = {
+                        Text(
+                            "De Alfa Queso",
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color.White)
+                            Icon(
+                                Icons.Default.Menu,
+                                contentDescription = "Menu",
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFFF9800))
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
                 )
             }
         ) { paddingValues ->
-            DashboardContent(selectedItem = selectedItem, modifier = Modifier.padding(paddingValues))
+
+            DashboardContent(
+                selectedItem = selectedItem,
+                modifier = Modifier.padding(paddingValues)
+            )
         }
     }
 
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
-            title = { Text("Cerrar Sesión") },
-            text = { Text("¿Estás seguro de que deseas salir?") },
+            title = {
+                Text(
+                    "Cerrar Sesión",
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            },
+            text = {
+                Text(
+                    "¿Estás seguro de que deseas salir?",
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            },
             confirmButton = {
                 TextButton(onClick = { showLogoutDialog = false; onLogoutClick() }) {
-                    Text("Cerrar Sesión", color = Color.Red)
+                    Text(
+                        "Cerrar Sesión",
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showLogoutDialog = false }) { Text("Cancelar") }
+                TextButton(onClick = { showLogoutDialog = false }) {
+                    Text("Cancelar")
+                }
             }
         )
     }
@@ -131,10 +180,24 @@ fun DashboardScreen(
 @Composable
 fun DashboardContent(selectedItem: String, modifier: Modifier = Modifier) {
     Column(
-        modifier = modifier.fillMaxSize().background(Color(0xFFF5F5F5)).padding(16.dp).verticalScroll(rememberScrollState())
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState())
     ) {
-        Text("Dashboard", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-        Text("Resumen general del negocio", fontSize = 14.sp, color = Color.Gray)
+        Text(
+            "Dashboard",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+
+        Text(
+            "Resumen general del negocio",
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+        )
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -181,17 +244,45 @@ fun DashboardContent(selectedItem: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun SummaryCard(icon: ImageVector, title: String, value: String, color: Color, iconColor: Color, modifier: Modifier = Modifier) {
+fun SummaryCard(
+    icon: ImageVector,
+    title: String,
+    value: String,
+    color: Color,
+    iconColor: Color,
+    modifier: Modifier = Modifier
+) {
     Card(
         modifier = modifier.height(110.dp),
-        colors = CardDefaults.cardColors(containerColor = color),
+        colors = CardDefaults.cardColors(
+            containerColor = color // 👈 color personalizado
+        ),
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.Center) {
-            Icon(icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(24.dp))
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                icon,
+                contentDescription = null,
+                tint = iconColor
+            )
+
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = title, fontSize = 12.sp, color = Color.DarkGray)
-            Text(text = value, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+
+            Text(
+                text = title,
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            )
+
+            Text(
+                text = value,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
         }
     }
 }
