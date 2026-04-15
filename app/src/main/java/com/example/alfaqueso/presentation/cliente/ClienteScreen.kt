@@ -28,14 +28,12 @@ import com.example.alfaqueso.data.remote.dto.ClienteDto
 @Composable
 fun ClienteScreen(
     usuarioId: Int? = null,
-    onMenuItemClick: (String) -> Unit = {},
     onNavigateToPerfil: (Int) -> Unit = {},
-    onLogoutClick: () -> Unit = {},
-    onNavigateBack: () -> Unit = {},
+    onMenuItemClick: (String) -> Unit = {},
     viewModel: ClienteViewModel = hiltViewModel()
 ) {
-    var selectedItem by remember { mutableStateOf("Clientes") }
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    var selectedItem by remember { mutableStateOf("Dashboard") }
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var showLogoutDialog by remember { mutableStateOf(false) }
 
@@ -43,16 +41,16 @@ fun ClienteScreen(
     val operationState by viewModel.operationState.collectAsStateWithLifecycle()
 
     var searchText by remember { mutableStateOf("") }
-    var showFormularioCliente by remember { mutableStateOf(false) }
-
-    val snackbarHostState = remember { SnackbarHostState() }
+    var showFormularioCliente by remember { mutableStateOf(false)
+    }
 
     val menuItems = listOf(
-        "Dashboard", "Ventas", "Pedidos", "Cliente",
+        "Dashboard", "Ventas", "Pedido", "Cliente",
         "Inventario", "Compras", "Rutas", "Cuentas por Cobrar", "Cerrar Sesión"
     )
 
-    // Efecto para manejar mensajes de éxito o error al guardar
+    val snackbarHostState = remember { SnackbarHostState() }
+
     LaunchedEffect(operationState) {
         when (val state = operationState) {
             is ClienteOperationState.Success -> {
@@ -71,63 +69,73 @@ fun ClienteScreen(
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            ModalDrawerSheet(
-                modifier = Modifier.width(300.dp),
-                drawerContainerColor = Color.White
-            ) {
-                // Cabecera del Drawer
+            ModalDrawerSheet(modifier = Modifier.width(300.dp)) {
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color(0xFFFF9800))
-                        .padding(24.dp)
+                        .fillMaxHeight()
+                        .background(MaterialTheme.colorScheme.surface)
                 ) {
-                    Box(
+                    // Cabecera del Menú
+                    Column(
                         modifier = Modifier
-                            .size(50.dp)
-                            .clip(RoundedCornerShape(25.dp))
-                            .background(Color.White),
-                        contentAlignment = Alignment.Center
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.primary)
+                            .padding(24.dp)
                     ) {
-                        Icon(Icons.Default.Person, contentDescription = null, tint = Color(0xFFFF9800))
+                        Text(
+                            "De Alfa Queso",
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Text(
+                            "Sistema de Gestión",
+                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { onNavigateToPerfil(usuarioId ?: 0) }) {
+                            Icon(Icons.Default.AccountCircle, contentDescription = null, tint = Color.White, modifier = Modifier.size(40.dp))
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text("Usuario Admin", color = Color.White, fontWeight = FontWeight.Medium)
+                        }
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text("Usuario Admin", color = Color.White, fontWeight = FontWeight.Bold)
-                    Text("admin@alfaqueso.com", color = Color.White.copy(alpha = 0.8f), fontSize = 12.sp)
-                }
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Items del Menú
-                menuItems.forEach { item ->
-                    NavigationDrawerItem(
-                        label = { Text(item) },
-                        selected = selectedItem == item,
-                        onClick = {
-                            if (item == "Cerrar Sesión") {
-                                showLogoutDialog = true
-                            } else {
-                                selectedItem = item
-                                onMenuItemClick(item)
-                            }
-                            scope.launch { drawerState.close() }
-                        },
-                        icon = {
-                            Icon(
-                                imageVector = when(item) {
-                                    "Dashboard" -> Icons.Default.Dashboard
-                                    "Ventas" -> Icons.Default.Receipt
-                                    "Clientes" -> Icons.Default.Groups
-                                    "Inventario" -> Icons.Default.Inventory
-                                    "Cerrar Sesión" -> Icons.Default.ExitToApp
-                                    else -> Icons.Default.List
+                    // Lista de Opciones
+                    Column(modifier = Modifier.padding(8.dp).verticalScroll(rememberScrollState())) {
+                        menuItems.forEach { item ->
+                            NavigationDrawerItem(
+                                label = { Text(item) },
+                                selected = selectedItem == item,
+                                onClick = {
+                                    if (item == "Cerrar Sesión") {
+                                        showLogoutDialog = true
+                                    } else {
+                                        selectedItem = item
+                                        onMenuItemClick(item)
+                                    }
+                                    scope.launch { drawerState.close() }
                                 },
-                                contentDescription = null,
-                                tint = if (item == "Cerrar Sesión") Color.Red else Color.Unspecified
+                                icon = {
+                                    Icon(
+                                        imageVector = when (item) {
+                                            "Dashboard" -> Icons.Default.Dashboard
+                                            "Ventas" -> Icons.Default.Receipt
+                                            "Pedido" -> Icons.Default.ShoppingCart
+                                            "Clientes" -> Icons.Default.People
+                                            "Inventario" -> Icons.Default.Inventory
+                                            "Cerrar Sesión" -> Icons.Default.ExitToApp
+                                            else -> Icons.Default.List
+                                        },
+                                        contentDescription = null,
+                                        tint = if (item == "Cerrar Sesión") Color.Red else Color.Unspecified
+                                    )
+                                },
+                                modifier = Modifier.padding(vertical = 2.dp)
                             )
-                        },
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
-                    )
+                        }
+                    }
                 }
             }
         }
@@ -137,36 +145,50 @@ fun ClienteScreen(
                 TopAppBar(
                     title = {
                         Column {
-                            Text("De Alfa Queso", color = Color.White)
-                            Text("Clientes", fontSize = 14.sp, color = Color.White.copy(alpha = 0.8f))
+                            Text("De Alfa Queso", color = MaterialTheme.colorScheme.onPrimary)
+                            Text(
+                                "Clientes",
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+                            )
                         }
                     },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color.White)
+                            Icon(Icons.Default.Menu, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFFF9800))
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
                 )
             },
             snackbarHost = { SnackbarHost(snackbarHostState) }
         ) { paddingValues ->
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color(0xFFF5F5F5))
+                    .background(MaterialTheme.colorScheme.background)
                     .padding(paddingValues)
                     .verticalScroll(rememberScrollState())
             ) {
-                // Panel Superior: Buscador y Botón Nuevo
+
+                // PANEL SUPERIOR
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color.White)
+                        .background(MaterialTheme.colorScheme.surface)
                         .padding(16.dp)
                 ) {
-                    Text("Directorio de clientes", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        "Directorio de clientes",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
                     Spacer(modifier = Modifier.height(12.dp))
+
                     OutlinedTextField(
                         value = searchText,
                         onValueChange = {
@@ -175,23 +197,28 @@ fun ClienteScreen(
                         },
                         modifier = Modifier.fillMaxWidth(),
                         placeholder = { Text("Buscar cliente...") },
-                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                        shape = RoundedCornerShape(8.dp)
+                        leadingIcon = { Icon(Icons.Default.Search, null) }
                     )
+
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Button(
                         onClick = { showFormularioCliente = !showFormularioCliente },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800))
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Icon(if (showFormularioCliente) Icons.Default.Close else Icons.Default.Add, contentDescription = null)
+                        Icon(
+                            if (showFormularioCliente) Icons.Default.Close else Icons.Default.Add,
+                            contentDescription = null
+                        )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(if (showFormularioCliente) "Cancelar Registro" else "Agregar Nuevo Cliente")
+                        Text(
+                            if (showFormularioCliente) "Cancelar Registro"
+                            else "Agregar Nuevo Cliente"
+                        )
                     }
                 }
 
-                // Mostrar Formulario si está activo
+                // FORMULARIO
                 if (showFormularioCliente) {
                     Box(modifier = Modifier.padding(16.dp)) {
                         FormularioNuevoCliente(
@@ -202,60 +229,78 @@ fun ClienteScreen(
                     }
                 }
 
-                // Contenido principal según el estado de la lista
+                // LISTADO
                 when (val state = uiState) {
                     is ClienteUiState.Loading -> {
-                        Box(Modifier.fillMaxWidth().padding(32.dp), Alignment.Center) {
-                            CircularProgressIndicator(color = Color(0xFFFF9800))
+                        Box(
+                            Modifier.fillMaxWidth().padding(32.dp),
+                            Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
                         }
                     }
+
                     is ClienteUiState.Success -> {
                         Column(
                             modifier = Modifier.padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             state.clientes.forEach { cliente ->
-                                ClienteCard(cliente = cliente, onVerDetalles = { /* Navegar */ })
+                                ClienteCard(cliente)
                             }
                         }
                     }
+
                     is ClienteUiState.Empty -> {
-                        Column(
+                        Box(
                             modifier = Modifier.fillMaxWidth().padding(64.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Default.PeopleOutline, contentDescription = null, modifier = Modifier.size(64.dp), tint = Color.LightGray)
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text("No se encontraron clientes", color = Color.Gray)
+                            Text("No se encontraron clientes")
                         }
                     }
+
                     is ClienteUiState.Error -> {
-                        Text("Error: ${state.message}", color = Color.Red, modifier = Modifier.padding(16.dp))
+                        Text(
+                            "Error: ${state.message}",
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(16.dp)
+                        )
                     }
                 }
             }
         }
     }
-
-    // Diálogo de Cerrar Sesión
-    if (showLogoutDialog) {
-        AlertDialog(
-            onDismissRequest = { showLogoutDialog = false },
-            title = { Text("Cerrar Sesión") },
-            text = { Text("¿Estás seguro de que deseas salir del sistema?") },
-            confirmButton = {
-                TextButton(onClick = {
-                    showLogoutDialog = false
-                    onLogoutClick()
-                }) { Text("Cerrar Sesión", color = Color.Red) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showLogoutDialog = false }) { Text("Volver") }
-            }
-        )
-    }
 }
 
+@Composable
+fun ClienteCard(cliente: ClienteDto) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+
+            Text(
+                cliente.nombreNegocio,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Text("Contacto: ${cliente.contacto}")
+            Text("Teléfono: ${cliente.telefono}")
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedButton(onClick = { }) {
+                Text("Ver Perfil", color = MaterialTheme.colorScheme.primary)
+            }
+        }
+    }
+}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FormularioNuevoCliente(
@@ -270,11 +315,20 @@ fun FormularioNuevoCliente(
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            Text("Registrar Nuevo Cliente", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFF9800))
+
+            Text(
+                "Registrar Nuevo Cliente",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
@@ -284,6 +338,7 @@ fun FormularioNuevoCliente(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !isLoading
             )
+
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
@@ -293,6 +348,7 @@ fun FormularioNuevoCliente(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !isLoading
             )
+
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
@@ -303,6 +359,7 @@ fun FormularioNuevoCliente(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !isLoading
             )
+
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
@@ -317,51 +374,44 @@ fun FormularioNuevoCliente(
             Spacer(modifier = Modifier.height(24.dp))
 
             Row(modifier = Modifier.fillMaxWidth()) {
-                OutlinedButton(onClick = onCancelar, modifier = Modifier.weight(1f), enabled = !isLoading) {
+
+                OutlinedButton(
+                    onClick = onCancelar,
+                    modifier = Modifier.weight(1f),
+                    enabled = !isLoading
+                ) {
                     Text("Cancelar")
                 }
+
                 Spacer(modifier = Modifier.width(8.dp))
+
                 Button(
                     onClick = {
                         if (nombreNegocio.isNotBlank()) {
-                            onGuardar(ClienteDto(0, nombreNegocio, contacto, telefono, email, emptyList()))
+                            onGuardar(
+                                ClienteDto(
+                                    clienteId = 0,
+                                    nombreNegocio = nombreNegocio,
+                                    contacto = contacto,
+                                    telefono = telefono,
+                                    email = email
+                                )
+                            )
                         }
                     },
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
                     enabled = !isLoading && nombreNegocio.isNotBlank()
                 ) {
                     if (isLoading) {
-                        CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp
+                        )
                     } else {
                         Text("Guardar")
                     }
                 }
-            }
-        }
-    }
-}
-
-@Composable
-fun ClienteCard(cliente: ClienteDto, onVerDetalles: () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(2.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(cliente.nombreNegocio, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color(0xFFFF9800))
-            Text("Persona de contacto: ${cliente.contacto}", fontSize = 14.sp)
-            Text("Teléfono: ${cliente.telefono}", fontSize = 14.sp, color = Color.Gray)
-            if (cliente.email.isNotEmpty()) {
-                Text("Email: ${cliente.email}", fontSize = 14.sp, color = Color.Gray)
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-            OutlinedButton(
-                onClick = onVerDetalles,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Ver Perfil y Cuentas", color = Color(0xFFFF9800))
             }
         }
     }
