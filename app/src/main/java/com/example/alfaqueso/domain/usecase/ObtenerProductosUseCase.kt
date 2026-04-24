@@ -1,17 +1,14 @@
 package com.example.alfaqueso.domain.usecase
 
-import com.example.alfaqueso.data.mapper.toDomain
 import com.example.alfaqueso.domain.model.Producto
+import com.example.alfaqueso.domain.repository.ProductoRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class ObtenerProductosUseCase @Inject constructor(
-    private val repository: ProductoRepositoryImpl
+    private val repository: ProductoRepository
 ) {
     operator fun invoke(): Flow<List<Producto>> {
-        return repository.obtenerProductos().map { lista ->
-            lista.map { it.toDomain() }
-        }
+        return repository.obtenerProductos()
     }
 }

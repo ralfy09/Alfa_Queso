@@ -46,6 +46,9 @@ object DatabaseModule {
     @Provides
     fun provideCxcDao(db: AlfaDatabase): CuentasPorCobrarDao = db.cxcDao
 
+    @Provides
+    fun provideProductoDao(db: AlfaDatabase): ProductoDao = db.productoDao
+
     // 🔹 REPOSITORIES
     @Provides
     @Singleton
