@@ -12,7 +12,8 @@ import com.example.alfaqueso.data.local.entity.*
         VentaEntity::class,
         ClienteEntity::class,
         CuentasPorCobrarEntity::class,
-        PedidoEntity::class
+        PedidoEntity::class,
+        ProductoEntity::class
     ],
     version = 6,
     exportSchema = false
@@ -24,4 +25,6 @@ abstract class AlfaDatabase : RoomDatabase() {
     abstract val clienteDao: ClienteDao
     abstract val cxcDao: CuentasPorCobrarDao
     abstract val pedidoDao: PedidoDao
+
+    abstract val productoDao: ProductoDao
 }
