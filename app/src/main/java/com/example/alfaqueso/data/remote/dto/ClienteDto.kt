@@ -10,6 +10,5 @@ data class ClienteDto(
     @Json(name = "contacto") val contacto: String,
     @Json(name = "telefono") val telefono: String,
     @Json(name = "email") val email: String,
-    // Relación con sus deudas (se inicializa vacía)
     @Json(name = "cuentasPorCobrar") val cuentasPorCobrar: List<CuentasPorCobrarDto> = emptyList()
 )
