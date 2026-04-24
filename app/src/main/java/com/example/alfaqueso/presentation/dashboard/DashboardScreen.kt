@@ -37,23 +37,36 @@ fun DashboardScreen(
     val scope = rememberCoroutineScope()
     var showLogoutDialog by remember { mutableStateOf(false) }
 
-    val menuItems = listOf("Dashboard", "Ventas", "Pedido", "Cliente", "Inventario", "Compras", "Rutas", "Cuentas por Cobrar", "Cerrar Sesión")
+    val menuItems = listOf(
+        "Dashboard", "Ventas", "Pedido", "Cliente",
+        "Inventario",  "Cerrar Sesión"
+    )
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet(modifier = Modifier.width(300.dp)) {
                 Column(modifier = Modifier.fillMaxHeight().background(MaterialTheme.colorScheme.surface)) {
-                    Column(modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primary).padding(24.dp)) {
+                    // Header del drawer
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.primary)
+                            .padding(24.dp)
+                    ) {
                         Text("Alfa Queso", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                         Text("Sistema de Gestión", color = Color.White.copy(alpha = 0.8f))
                         Spacer(modifier = Modifier.height(16.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { onNavigateToPerfil(usuarioId ?: 0) }) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.clickable { onNavigateToPerfil(usuarioId ?: 0) }
+                        ) {
                             Icon(Icons.Default.AccountCircle, contentDescription = null, tint = Color.White, modifier = Modifier.size(40.dp))
                             Spacer(modifier = Modifier.width(12.dp))
                             Text("Usuario Admin", color = Color.White, fontWeight = FontWeight.Medium)
                         }
                     }
+                    // Items del menú
                     Column(modifier = Modifier.padding(8.dp).verticalScroll(rememberScrollState())) {
                         menuItems.forEach { item ->
                             NavigationDrawerItem(
@@ -102,19 +115,75 @@ fun DashboardScreen(
                 )
             }
         ) { paddingValues ->
-            Column(modifier = Modifier.padding(paddingValues).padding(16.dp)) {
+            Column(
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
                 Text("Dashboard", fontSize = 24.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Las tarjetas ahora usan el 'state' que viene del ViewModel real
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    SummaryCard("Ventas Hoy", "RD$ ${state.ventasTotalesHoy}", Color(0xFFE8F5E9), Color(0xFF4CAF50), Icons.Default.Payments, Modifier.weight(1f))
-                    SummaryCard("Pedidos", "${state.totalPedidos}", Color(0xFFE3F2FD), Color(0xFF2196F3), Icons.Default.LocalShipping, Modifier.weight(1f))
-                }
+                // Tarjeta ancha — Ventas Totales históricas
+                SummaryCard(
+                    title = "💰 Ventas Totales",
+                    value = "RD$ ${String.format("%,.2f", state.ventasTotalesHistorico)}",
+                    color = Color(0xFFFFF8E1),
+                    iconColor = Color(0xFFFF9800),
+                    icon = Icons.Default.Payments,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
                 Spacer(modifier = Modifier.height(12.dp))
+
+                // Fila 1: Ventas Hoy + Pedidos
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    SummaryCard("Clientes", "${state.totalClientes}", Color(0xFFF3E5F5), Color(0xFF9C27B0), Icons.Default.Groups, Modifier.weight(1f))
-                    SummaryCard("Stock", "${state.totalStock}", Color(0xFFFFF3E0), Color(0xFFFF9800), Icons.Default.Layers, Modifier.weight(1f))
+                    SummaryCard(
+                        title = "Ventas Hoy",
+                        value = "${state.cantidadVentasHoy} ventas",
+                        color = Color(0xFFE8F5E9),
+                        iconColor = Color(0xFF4CAF50),
+                        icon = Icons.Default.Today,
+                        modifier = Modifier.weight(1f)
+                    )
+                    SummaryCard(
+                        title = "Pedidos",
+                        value = "${state.totalPedidos}",
+                        color = Color(0xFFE3F2FD),
+                        iconColor = Color(0xFF2196F3),
+                        icon = Icons.Default.LocalShipping,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Fila 2: Clientes + Stock
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    SummaryCard(
+                        title = "Clientes",
+                        value = "${state.totalClientes}",
+                        color = Color(0xFFF3E5F5),
+                        iconColor = Color(0xFF9C27B0),
+                        icon = Icons.Default.People,
+                        modifier = Modifier.weight(1f)
+                    )
+                    SummaryCard(
+                        title = "Stock Total",
+                        value = "${String.format("%,d", state.totalStock)} lbs",
+                        color = Color(0xFFFFF3E0),
+                        iconColor = Color(0xFFFF9800),
+                        icon = Icons.Default.Inventory,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                if (state.cargando) {
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
                 }
             }
         }
@@ -138,13 +207,27 @@ fun DashboardScreen(
 }
 
 @Composable
-fun SummaryCard(title: String, value: String, color: Color, iconColor: Color, icon: ImageVector, modifier: Modifier = Modifier) {
-    Card(modifier = modifier.height(110.dp), colors = CardDefaults.cardColors(containerColor = color)) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.Center) {
-            Icon(icon, contentDescription = null, tint = iconColor)
+fun SummaryCard(
+    title: String,
+    value: String,
+    color: Color,
+    iconColor: Color,
+    icon: ImageVector,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.height(120.dp),
+        colors = CardDefaults.cardColors(containerColor = color),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(32.dp))
             Spacer(modifier = Modifier.height(8.dp))
-            Text(title, fontSize = 12.sp, color = Color.Gray)
-            Text(value, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(title, fontSize = 13.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
+            Text(value, fontSize = 16.sp, fontWeight = FontWeight.Bold, maxLines = 2)
         }
     }
 }
