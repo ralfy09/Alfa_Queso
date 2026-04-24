@@ -2,27 +2,26 @@ package com.example.alfaqueso.data.local.Database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import com.example.alfaqueso.data.local.dao.ClienteDao
-import com.example.alfaqueso.data.local.dao.CuentasPorCobrarDao
-import com.example.alfaqueso.data.local.dao.ProductoDao
-import com.example.alfaqueso.data.local.dao.VentaDao
-import com.example.alfaqueso.data.local.entities.ProductoEntity
-import com.example.alfaqueso.data.local.entity.ClienteEntity
-import com.example.alfaqueso.data.local.entity.CuentasPorCobrarEntity
-import com.example.alfaqueso.data.local.entity.VentaEntity
+import com.example.alfaqueso.data.local.dao.*
+import com.example.alfaqueso.data.local.entities.*
+import com.example.alfaqueso.data.local.entity.*
+
 @Database(
     entities = [
-        ProductoEntity::class,
+        InventarioEntity::class,
         VentaEntity::class,
         ClienteEntity::class,
-        CuentasPorCobrarEntity::class
+        CuentasPorCobrarEntity::class,
+        PedidoEntity::class
     ],
-    version = 4, // <--- Sube a 4
+    version = 6,
     exportSchema = false
 )
 abstract class AlfaDatabase : RoomDatabase() {
-    abstract val productoDao: ProductoDao
+
+    abstract val inventarioDao: InventarioDao
     abstract val ventaDao: VentaDao
     abstract val clienteDao: ClienteDao
     abstract val cxcDao: CuentasPorCobrarDao
+    abstract val pedidoDao: PedidoDao
 }
