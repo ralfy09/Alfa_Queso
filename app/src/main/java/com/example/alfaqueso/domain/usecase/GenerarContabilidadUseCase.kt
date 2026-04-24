@@ -15,12 +15,10 @@ class GenerarContabilidadUseCase @Inject constructor(
 
             val totalVentas = listaVentas.size
 
-            // 1. Especificamos que queremos sumar Doubles (Dinero)
-            // Cambiamos 'montoTotal' por 'total' para que coincida con tu modelo Venta
+
             val ingreso = listaVentas.sumOf { venta -> venta.total }
 
-            // 2. Agrupamos por el nombre del cliente (o negocio)
-            // Usamos '1' para contar ventas, o podrías añadir 'cantidad' a tu modelo Venta
+
             val ventasPorTipo = listaVentas
                 .groupBy { it.nombreCliente }
                 .mapValues { entry ->

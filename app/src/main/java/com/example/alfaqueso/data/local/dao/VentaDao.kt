@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface VentaDao {
-    // CORREGIDO: Cambiamos 'fechaTransaccion' por 'fecha'
     @Query("SELECT * FROM tabla_ventas ORDER BY fecha DESC")
     fun obtenerHistorialVentas(): Flow<List<VentaEntity>>
 

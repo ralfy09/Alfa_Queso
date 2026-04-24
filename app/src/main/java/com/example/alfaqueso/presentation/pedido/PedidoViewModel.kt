@@ -5,77 +5,101 @@ import androidx.lifecycle.viewModelScope
 import com.example.alfaqueso.data.mapper.toDetallePedido
 import com.example.alfaqueso.data.remote.dto.PedidoDto
 import com.example.alfaqueso.domain.model.DetallePedido
-import com.example.alfaqueso.domain.model.Pedido
 import com.example.alfaqueso.domain.model.Producto
+import com.example.alfaqueso.domain.repository.PedidosRepository // ¡El puente a la Base de Datos!
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class PedidoViewModel : ViewModel() {
+@HiltViewModel
+class PedidoViewModel @Inject constructor(
+    private val repository: PedidosRepository
+) : ViewModel() {
 
-    private val _state = MutableStateFlow(PedidoUiState())
+    private val _state = MutableStateFlow<PedidoUiState>(PedidoUiState.Loading)
     val state: StateFlow<PedidoUiState> = _state.asStateFlow()
 
-    private val _pedidos = MutableStateFlow<List<Pedido>>(emptyList())
-    val pedidos: StateFlow<List<Pedido>> = _pedidos.asStateFlow()
+    private val _formularioState = MutableStateFlow(FormularioPedidoState())
+    val formularioState: StateFlow<FormularioPedidoState> = _formularioState.asStateFlow()
 
-    private var todosLosPedidos = listOf<Pedido>()
+    private var todosLosPedidos = listOf<PedidoDto>()
+
+    init {
+        // Al iniciar la pantalla, leemos todos los pedidos guardados en la Base de Datos
+        viewModelScope.launch {
+            repository.obtenerHistorialPedidos().collect { listaPedidos ->
+                todosLosPedidos = listaPedidos
+                actualizarPantalla(listaPedidos)
+            }
+        }
+    }
 
     fun filterPedidos(query: String) {
-
         if (query.isBlank()) {
-            _pedidos.value = todosLosPedidos
+            actualizarPantalla(todosLosPedidos)
             return
         }
-
         val filtrados = todosLosPedidos.filter {
-            it.clienteNombre.contains(query, ignoreCase = true)
+            it.nombreCliente.contains(query, ignoreCase = true)
         }
-
-        _pedidos.value = filtrados
+        actualizarPantalla(filtrados)
     }
 
     fun createPedido(pedidoDto: PedidoDto) {
         viewModelScope.launch {
-
             if (pedidoDto.nombreCliente.isBlank()) return@launch
 
-            val nuevoPedido = Pedido(
-                id = System.currentTimeMillis().toInt(),
-                clienteNombre = pedidoDto.nombreCliente,
-                productos = _state.value.productos,
-                total = _state.value.total,
-                fecha = System.currentTimeMillis(),
+            // ¡LA MAGIA DEL ID! Generamos un ID único y le ponemos estado "Pendiente"
+            val pedidoAguardar = pedidoDto.copy(
+                pedidoId = (System.currentTimeMillis() % Int.MAX_VALUE).toInt(),
                 estado = "Pendiente"
             )
 
-            val nuevaLista = _pedidos.value + nuevoPedido
+            // Guardamos el pedido permanentemente en Room
+            repository.registrarPedido(pedidoAguardar)
 
-            _pedidos.value = nuevaLista
-            todosLosPedidos = nuevaLista
-
-            _state.value = PedidoUiState()
+            // Limpiamos el formulario para el siguiente
+            _formularioState.value = FormularioPedidoState()
         }
     }
 
+    fun marcarComoEntregado(idDelPedido: Int) {
+        viewModelScope.launch {
+            // Le pedimos a Room que actualice este pedido específico a "Entregado"
+            repository.actualizarEstadoPedido(idDelPedido, "Entregado")
+        }
+    }
+
+    private fun actualizarPantalla(lista: List<PedidoDto>) {
+        if (lista.isEmpty()) {
+            _state.value = PedidoUiState.Empty
+        } else {
+            _state.value = PedidoUiState.Success(lista)
+        }
+    }
+
+    // =========================================================
+    // TUS FUNCIONES DE PRODUCTOS PARA EL DETALLE DEL PEDIDO
+    // =========================================================
+
     fun onClienteChange(nombre: String) {
-        _state.value = _state.value.copy(clienteNombre = nombre)
+        _formularioState.value = _formularioState.value.copy(clienteNombre = nombre)
     }
 
     fun agregarProducto(producto: DetallePedido) {
-        val nuevaLista = _state.value.productos + producto
-
-        _state.value = _state.value.copy(
+        val nuevaLista = _formularioState.value.productos + producto
+        _formularioState.value = _formularioState.value.copy(
             productos = nuevaLista,
             total = nuevaLista.sumOf { it.subtotal }
         )
     }
 
     fun eliminarProducto(producto: DetallePedido) {
-        val nuevaLista = _state.value.productos - producto
-
-        _state.value = _state.value.copy(
+        val nuevaLista = _formularioState.value.productos - producto
+        _formularioState.value = _formularioState.value.copy(
             productos = nuevaLista,
             total = nuevaLista.sumOf { it.subtotal }
         )
@@ -83,11 +107,10 @@ class PedidoViewModel : ViewModel() {
 
     fun agregarProductoDesdeProducto(producto: Producto, cantidad: Int = 1) {
         val detalle = producto.toDetallePedido(cantidad)
-
-        val nuevaLista = _state.value.productos + detalle
-
-        _state.value = _state.value.copy(
+        val nuevaLista = _formularioState.value.productos + detalle
+        _formularioState.value = _formularioState.value.copy(
             productos = nuevaLista,
             total = nuevaLista.sumOf { it.subtotal }
         )
-    }}
+    }
+}

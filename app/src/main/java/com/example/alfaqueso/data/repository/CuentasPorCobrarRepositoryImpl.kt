@@ -15,9 +15,7 @@ class CuentasPorCobrarRepositoryImpl @Inject constructor(
 ) : CuentasPorCobrarRepository {
 
     override fun obtenerTodas(): Flow<List<CuentasPorCobrarDto>> {
-        // Le decimos a Kotlin: "Lo que viene del Flow es una Lista de Entidades"
         return dao.obtenerTodas().map { listaEntidades: List<CuentasPorCobrarEntity> ->
-            // Le decimos: "Cada elemento de la lista es una Entidad"
             listaEntidades.map { entidad: CuentasPorCobrarEntity ->
                 entidad.toDto()
             }

@@ -24,6 +24,7 @@ firebaseAppdistributionGradle = "5.1.1"
 runtime = "1.10.1"
 lifecycleRuntimeCompose = "2.10.0"
 ui = "1.10.3"
+playServicesTfliteSupport = "16.4.0"
 
 
 [libraries]
@@ -57,6 +58,7 @@ firebase-appdistribution-gradle = { group = "com.google.firebase", name = "fireb
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
 androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycleRuntimeCompose" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "ui" }
+play-services-tflite-support = { group = "com.google.android.gms", name = "play-services-tflite-support", version.ref = "playServicesTfliteSupport" }
 
 
 [plugins]

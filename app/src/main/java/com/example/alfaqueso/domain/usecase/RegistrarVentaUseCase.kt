@@ -1,6 +1,6 @@
 package com.example.alfaqueso.domain.usecase
 
-// ESTOS SON LOS IMPORT QUE FALTAN O ESTÁN MAL
+
 import com.example.alfaqueso.domain.repository.VentasRepository
 import com.example.alfaqueso.domain.repository.InventarioRepository
 import com.example.alfaqueso.domain.model.Producto
@@ -19,7 +19,6 @@ class RegistrarVentaUseCase @Inject constructor(
 
         val total = producto.precio * cantidadVender
 
-        // Creamos el objeto Venta asegurándonos de que los nombres coincidan con tu modelo
         val nuevaVenta = Venta(
             id = 0,
             clienteId = 0, // O el ID que corresponda
@@ -29,11 +28,9 @@ class RegistrarVentaUseCase @Inject constructor(
             fecha = System.currentTimeMillis()
         )
 
-        // 1. Aquí se quita el error de 'registrarVenta'
         ventasRepository.registrarVenta(nuevaVenta)
 
-        // 2. Aquí se quita el error de 'actualizarInventarioLocal'
-        // Fíjate si en tu interfaz de InventarioRepository el método se llama exactamente así
+
         inventarioRepository.actualizarInventarioLocal(producto.id, -cantidadVender)
     }
 }

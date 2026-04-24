@@ -3,12 +3,6 @@ package com.example.alfaqueso.presentation.inventario
 import com.example.alfaqueso.domain.model.Producto
 
 
-//data class InventarioUIstate(
-//    val isLoading: Boolean = false,
-//    val productos: List<com.example.alfaqueso.data.remote.dto.InventarioDto> = emptyList(),
-//    val error: String? = null
-//)
-
 sealed class InventarioUiState {
     object Loading : InventarioUiState()
     object Empty : InventarioUiState()

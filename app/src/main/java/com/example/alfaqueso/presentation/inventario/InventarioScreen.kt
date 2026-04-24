@@ -19,18 +19,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.alfaqueso.data.remote.dto.InventarioDto
-import kotlinx.coroutines.launch
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import com.example.alfaqueso.domain.model.Producto
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InventarioScreen(
     viewModel: InventarioViewModel = hiltViewModel()
 ) {
-
     val uiState by viewModel.uiState.collectAsStateWithLifecycle<InventarioUiState>(InventarioUiState.Loading)
     val operationState by viewModel.operationState.collectAsStateWithLifecycle<InventarioOperationState>(InventarioOperationState.Idle)
 
@@ -59,17 +55,17 @@ fun InventarioScreen(
             TopAppBar(
                 title = {
                     Column {
-                        Text("De Alfa Queso", color = MaterialTheme.colorScheme.onPrimary)
+                        Text("Alfa Queso", color = Color.White)
                         Text(
-                            "Inventario",
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+                            "Gestión de Inventario",
+                            fontSize = 12.sp,
+                            color = Color.White.copy(alpha = 0.8f)
                         )
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = { }) {
-                        Icon(Icons.Default.Menu, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
+                        Icon(Icons.Default.Menu, contentDescription = null, tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -86,7 +82,6 @@ fun InventarioScreen(
                 .background(MaterialTheme.colorScheme.background)
                 .padding(paddingValues)
         ) {
-
             // 🔹 HEADER
             Column(
                 modifier = Modifier
@@ -94,16 +89,6 @@ fun InventarioScreen(
                     .background(MaterialTheme.colorScheme.surface)
                     .padding(16.dp)
             ) {
-
-                Text(
-                    "Gestión de Inventario",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
                 OutlinedTextField(
                     value = searchText,
                     onValueChange = {
@@ -111,10 +96,8 @@ fun InventarioScreen(
                         viewModel.filterProductos(it)
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Buscar producto...") },
-                    leadingIcon = {
-                        Icon(Icons.Default.Search, contentDescription = null)
-                    },
+                    placeholder = { Text("Buscar queso...") },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                     shape = RoundedCornerShape(8.dp)
                 )
 
@@ -125,7 +108,7 @@ fun InventarioScreen(
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (showFormularioProducto)
-                            MaterialTheme.colorScheme.secondary
+                            MaterialTheme.colorScheme.error
                         else
                             MaterialTheme.colorScheme.primary
                     )
@@ -135,7 +118,7 @@ fun InventarioScreen(
                         contentDescription = null
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(if (showFormularioProducto) "Cancelar" else "Nuevo Producto")
+                    Text(if (showFormularioProducto) "Cerrar" else "Nuevo Producto")
                 }
             }
 
@@ -146,7 +129,6 @@ fun InventarioScreen(
                     .padding(16.dp)
                     .verticalScroll(rememberScrollState())
             ) {
-
                 if (showFormularioProducto) {
                     FormularioNuevoProducto(
                         onGuardar = { viewModel.createProducto(it) },
@@ -158,39 +140,23 @@ fun InventarioScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 when (val state = uiState) {
-
                     is InventarioUiState.Loading -> {
-                        Box(
-                            modifier = Modifier.fillMaxWidth(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(
-                                color = MaterialTheme.colorScheme.primary
-                            )
+                        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                         }
                     }
-
                     is InventarioUiState.Success -> {
                         state.productos.forEach { producto ->
                             ProductoCard(producto)
                             Spacer(modifier = Modifier.height(8.dp))
                         }
                     }
-
                     is InventarioUiState.Empty -> {
-                        Text(
-                            "No hay productos",
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
-                        )
+                        Text("No hay quesos en inventario", modifier = Modifier.align(Alignment.CenterHorizontally))
                     }
-
                     is InventarioUiState.Error -> {
-                        Text(
-                            "Error: ${state.message}",
-                            color = MaterialTheme.colorScheme.error
-                        )
+                        Text("Error: ${state.message}", color = MaterialTheme.colorScheme.error)
                     }
-
                     else -> {}
                 }
             }
@@ -199,16 +165,27 @@ fun InventarioScreen(
 }
 
 @Composable
-fun ProductoCard(producto: Producto){
-    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color.White), elevation = CardDefaults.cardElevation(2.dp)) {
+fun ProductoCard(producto: Producto) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(2.dp)
+    ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Default.Inventory2, contentDescription = null, tint = Color(0xFFFF9800), modifier = Modifier.size(40.dp))
+            // Cambiado de naranja a azul primario
+            Icon(
+                Icons.Default.Inventory2,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(40.dp)
+            )
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(producto.nombre, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                // Cambiado de kg a libras
                 Text(
-                    "Stock: ${producto.inventarioDisponible} kg",
-                    color = if(producto.inventarioDisponible < 10) Color.Red else Color.Gray
+                    "Stock: ${producto.inventarioDisponible} libras",
+                    color = if (producto.inventarioDisponible < 10) Color.Red else Color.Gray
                 )
             }
             Text("RD$ ${producto.precio}", fontWeight = FontWeight.Bold, color = Color(0xFF4CAF50))
@@ -227,13 +204,19 @@ fun FormularioNuevoProducto(
     var stock by remember { mutableStateOf("") }
     var precio by remember { mutableStateOf("") }
 
-    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color.White), elevation = CardDefaults.cardElevation(4.dp)) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text("Registrar Producto", fontWeight = FontWeight.Bold, color = Color(0xFFFF9800))
+            // Cambiado de naranja a azul primario
+            Text("Registrar Queso", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
             Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(value = nombre, onValueChange = { nombre = it }, label = { Text("Nombre") }, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(value = stock, onValueChange = { stock = it }, label = { Text("Stock (kg)") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(value = precio, onValueChange = { precio = it }, label = { Text("Precio") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(value = nombre, onValueChange = { nombre = it }, label = { Text("Nombre del Queso") }, modifier = Modifier.fillMaxWidth())
+            // Etiqueta cambiada a Libras
+            OutlinedTextField(value = stock, onValueChange = { stock = it }, label = { Text("Stock inicial (libras)") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(value = precio, onValueChange = { precio = it }, label = { Text("Precio por libra (RD$)") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
@@ -250,13 +233,14 @@ fun FormularioNuevoProducto(
                     )
                 },
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
+                // Botón ahora en azul primario
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 enabled = !isLoading
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
                 } else {
-                    Text("Guardar Producto")
+                    Text("Guardar Queso")
                 }
             }
         }

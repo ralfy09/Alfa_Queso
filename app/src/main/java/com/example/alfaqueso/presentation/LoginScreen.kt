@@ -1,4 +1,4 @@
-package com.example.alfaqueso.presentation.login
+package com.example.alfaqueso.presentation
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.alfaqueso.R
+import com.example.alfaqueso.presentation.login.LoginViewModel
 
 @Composable
 fun LoginScreen(

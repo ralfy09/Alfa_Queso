@@ -5,7 +5,6 @@ import com.example.alfaqueso.data.remote.dto.ProductoDto
 import com.example.alfaqueso.domain.model.DetallePedido
 import com.example.alfaqueso.domain.model.Producto
 
-// Para la Base de Datos
 fun ProductoEntity.toDomain(): Producto {
     return Producto(
         id = this.id,
@@ -16,7 +15,6 @@ fun ProductoEntity.toDomain(): Producto {
     )
 }
 
-// Para Azure
 fun ProductoDto.toEntity(): ProductoEntity {
     return ProductoEntity(
         id = this.id,

@@ -7,5 +7,6 @@ data class PedidoDto (
     val clienteId: Int = 0,
     val nombreCliente: String = "",
     val fechaEntrega: String = "",
-    val notas: String = ""
+    val notas: String = "",
+    val estado: String = "Pendiente"
 )

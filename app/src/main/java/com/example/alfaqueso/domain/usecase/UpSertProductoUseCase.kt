@@ -1,6 +1,5 @@
 package com.example.alfaqueso.domain.usecase
 
-import com.example.alfaqueso.data.repository.ProductoRepositoryImpl
 import com.example.alfaqueso.domain.model.Producto
 import javax.inject.Inject
 

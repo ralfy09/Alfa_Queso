@@ -1,24 +1,25 @@
-package com.example.alfaqueso.presentation.Dashboard
+package com.example.alfaqueso.presentation.dashboard
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,46 +28,25 @@ fun DashboardScreen(
     usuarioId: Int? = null,
     onMenuItemClick: (String) -> Unit = {},
     onNavigateToPerfil: (Int) -> Unit = {},
-    onLogoutClick: () -> Unit = {}
+    onLogoutClick: () -> Unit = {},
+    viewModel: DashboardViewModel = hiltViewModel()
 ) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
     var selectedItem by remember { mutableStateOf("Dashboard") }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var showLogoutDialog by remember { mutableStateOf(false) }
 
-    val menuItems = listOf(
-        "Dashboard", "Ventas", "Pedido", "Cliente",
-        "Inventario", "Compras", "Rutas", "Cuentas por Cobrar", "Cerrar Sesión"
-    )
+    val menuItems = listOf("Dashboard", "Ventas", "Pedido", "Cliente", "Inventario", "Compras", "Rutas", "Cuentas por Cobrar", "Cerrar Sesión")
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet(modifier = Modifier.width(300.dp)) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .background(MaterialTheme.colorScheme.surface)
-                ) {
-                    // Cabecera del Menú
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.primary)
-                            .padding(24.dp)
-                    ) {
-                        Text(
-                            "De Alfa Queso",
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Text(
-                            "Sistema de Gestión",
-                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
-                        )
-
+                Column(modifier = Modifier.fillMaxHeight().background(MaterialTheme.colorScheme.surface)) {
+                    Column(modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primary).padding(24.dp)) {
+                        Text("Alfa Queso", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        Text("Sistema de Gestión", color = Color.White.copy(alpha = 0.8f))
                         Spacer(modifier = Modifier.height(16.dp))
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { onNavigateToPerfil(usuarioId ?: 0) }) {
                             Icon(Icons.Default.AccountCircle, contentDescription = null, tint = Color.White, modifier = Modifier.size(40.dp))
@@ -74,17 +54,14 @@ fun DashboardScreen(
                             Text("Usuario Admin", color = Color.White, fontWeight = FontWeight.Medium)
                         }
                     }
-
-                    // Lista de Opciones
                     Column(modifier = Modifier.padding(8.dp).verticalScroll(rememberScrollState())) {
                         menuItems.forEach { item ->
                             NavigationDrawerItem(
                                 label = { Text(item) },
                                 selected = selectedItem == item,
                                 onClick = {
-                                    if (item == "Cerrar Sesión") {
-                                        showLogoutDialog = true
-                                    } else {
+                                    if (item == "Cerrar Sesión") showLogoutDialog = true
+                                    else {
                                         selectedItem = item
                                         onMenuItemClick(item)
                                     }
@@ -96,16 +73,15 @@ fun DashboardScreen(
                                             "Dashboard" -> Icons.Default.Dashboard
                                             "Ventas" -> Icons.Default.Receipt
                                             "Pedido" -> Icons.Default.ShoppingCart
-                                            "Clientes" -> Icons.Default.People
+                                            "Cliente" -> Icons.Default.People
                                             "Inventario" -> Icons.Default.Inventory
-                                            "Cerrar Sesión" -> Icons.Default.ExitToApp
-                                            else -> Icons.Default.List
+                                            "Cerrar Sesión" -> Icons.AutoMirrored.Filled.ExitToApp
+                                            else -> Icons.AutoMirrored.Filled.List
                                         },
                                         contentDescription = null,
                                         tint = if (item == "Cerrar Sesión") Color.Red else Color.Unspecified
                                     )
-                                },
-                                modifier = Modifier.padding(vertical = 2.dp)
+                                }
                             )
                         }
                     }
@@ -116,179 +92,59 @@ fun DashboardScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = {
-                        Text(
-                            "De Alfa Queso",
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                    },
+                    title = { Text("Alfa Queso", color = Color.White) },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(
-                                Icons.Default.Menu,
-                                contentDescription = "Menu",
-                                tint = MaterialTheme.colorScheme.onPrimary
-                            )
+                            Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color.White)
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary)
                 )
             }
         ) { paddingValues ->
+            Column(modifier = Modifier.padding(paddingValues).padding(16.dp)) {
+                Text("Dashboard", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(20.dp))
 
-            DashboardContent(
-                selectedItem = selectedItem,
-                modifier = Modifier.padding(paddingValues)
-            )
+                // Las tarjetas ahora usan el 'state' que viene del ViewModel real
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    SummaryCard("Ventas Hoy", "RD$ ${state.ventasTotalesHoy}", Color(0xFFE8F5E9), Color(0xFF4CAF50), Icons.Default.Payments, Modifier.weight(1f))
+                    SummaryCard("Pedidos", "${state.totalPedidos}", Color(0xFFE3F2FD), Color(0xFF2196F3), Icons.Default.LocalShipping, Modifier.weight(1f))
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    SummaryCard("Clientes", "${state.totalClientes}", Color(0xFFF3E5F5), Color(0xFF9C27B0), Icons.Default.Groups, Modifier.weight(1f))
+                    SummaryCard("Stock", "${state.totalStock}", Color(0xFFFFF3E0), Color(0xFFFF9800), Icons.Default.Layers, Modifier.weight(1f))
+                }
+            }
         }
     }
 
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
-            title = {
-                Text(
-                    "Cerrar Sesión",
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            },
-            text = {
-                Text(
-                    "¿Estás seguro de que deseas salir?",
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            },
+            title = { Text("Cerrar Sesión") },
+            text = { Text("¿Estás seguro de que deseas salir?") },
             confirmButton = {
                 TextButton(onClick = { showLogoutDialog = false; onLogoutClick() }) {
-                    Text(
-                        "Cerrar Sesión",
-                        color = MaterialTheme.colorScheme.error
-                    )
+                    Text("Cerrar Sesión", color = Color.Red)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showLogoutDialog = false }) {
-                    Text("Cancelar")
-                }
+                TextButton(onClick = { showLogoutDialog = false }) { Text("Cancelar") }
             }
         )
     }
 }
 
 @Composable
-fun DashboardContent(selectedItem: String, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState())
-    ) {
-        Text(
-            "Dashboard",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-
-        Text(
-            "Resumen general del negocio",
-            fontSize = 14.sp,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-        )
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            SummaryCard(
-                icon = Icons.Default.Payments,
-                title = "Ventas Hoy",
-                value = "RD$ 45,230",
-                color = Color(0xFFE8F5E9),
-                iconColor = Color(0xFF4CAF50),
-                modifier = Modifier.weight(1f)
-            )
-            SummaryCard(
-                icon = Icons.Default.LocalShipping,
-                title = "Pedidos",
-                value = "28",
-                color = Color(0xFFE3F2FD),
-                iconColor = Color(0xFF2196F3),
-                modifier = Modifier.weight(1f)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            SummaryCard(
-                icon = Icons.Default.Groups,
-                title = "Clientes",
-                value = "156",
-                color = Color(0xFFF3E5F5),
-                iconColor = Color(0xFF9C27B0),
-                modifier = Modifier.weight(1f)
-            )
-            SummaryCard(
-                icon = Icons.Default.Layers,
-                title = "Stock",
-                value = "342",
-                color = Color(0xFFFFF3E0),
-                iconColor = Color(0xFFFF9800),
-                modifier = Modifier.weight(1f)
-            )
-        }
-    }
-}
-
-@Composable
-fun SummaryCard(
-    icon: ImageVector,
-    title: String,
-    value: String,
-    color: Color,
-    iconColor: Color,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier.height(110.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = color // 👈 color personalizado
-        ),
-        elevation = CardDefaults.cardElevation(2.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                icon,
-                contentDescription = null,
-                tint = iconColor
-            )
-
+fun SummaryCard(title: String, value: String, color: Color, iconColor: Color, icon: ImageVector, modifier: Modifier = Modifier) {
+    Card(modifier = modifier.height(110.dp), colors = CardDefaults.cardColors(containerColor = color)) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.Center) {
+            Icon(icon, contentDescription = null, tint = iconColor)
             Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = title,
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-            )
-
-            Text(
-                text = value,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+            Text(title, fontSize = 12.sp, color = Color.Gray)
+            Text(value, fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewDashboardScreen() {
-    DashboardScreen()
 }

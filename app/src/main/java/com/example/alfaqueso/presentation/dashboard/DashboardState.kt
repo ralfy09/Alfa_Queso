@@ -1,10 +1,10 @@
 package com.example.alfaqueso.presentation.dashboard
 
-import com.example.alfaqueso.domain.model.Producto
-
 data class DashboardState(
     val ventasTotalesHoy: Double = 0.0,
     val cantidadVentasHoy: Int = 0,
-    val productosBajoStock: List<Producto> = emptyList(),
+    val totalPedidos: Int = 0,
+    val totalClientes: Int = 0,
+    val totalStock: Int = 0,
     val cargando: Boolean = false
 )

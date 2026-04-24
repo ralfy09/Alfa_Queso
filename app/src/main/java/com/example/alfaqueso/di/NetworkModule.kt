@@ -17,10 +17,9 @@ object NetworkModule {
     @Singleton
     fun proveerQuesoApi(): QuesoApi {
         return Retrofit.Builder()
-            .baseUrl("https://proyectoquesos.azurewebsites.net/") // Tu servidor en Azure
-            // Como vi que agregaste Moshi en tus dependencias, lo usamos aquí:
+            .baseUrl("https://proyectoquesos.azurewebsites.net/")
             .addConverterFactory(MoshiConverterFactory.create())
             .build()
             .create(QuesoApi::class.java)
     }
-}
+    }

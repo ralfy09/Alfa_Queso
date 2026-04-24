@@ -24,6 +24,5 @@ class ClientesRepositoryImpl @Inject constructor(
     }
 
 
-// Funciones de conversión (Mappers)
 fun ClienteEntity.toDto() = ClienteDto(clienteId, nombreNegocio, contacto, telefono, email, emptyList())
 fun ClienteDto.toEntity() = ClienteEntity(clienteId, nombreNegocio, contacto, telefono, email)

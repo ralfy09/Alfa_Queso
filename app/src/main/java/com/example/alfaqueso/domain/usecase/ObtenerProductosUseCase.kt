@@ -1,7 +1,6 @@
 package com.example.alfaqueso.domain.usecase
 
 import com.example.alfaqueso.data.mapper.toDomain
-import com.example.alfaqueso.data.repository.ProductoRepositoryImpl
 import com.example.alfaqueso.domain.model.Producto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

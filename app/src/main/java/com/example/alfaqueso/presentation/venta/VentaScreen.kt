@@ -7,7 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -20,16 +19,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.alfaqueso.data.remote.dto.VentaDto
+import androidx.navigation.NavController
+import com.example.alfaqueso.data.remote.dto.ClienteDto
+import com.example.alfaqueso.presentation.Screen // Asegúrate de que esta ruta coincida con tu clase Screen
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VentasScreen(
+    navController: NavController,
     viewModel: VentaViewModel = hiltViewModel()
 ) {
+    // 1. Observamos los estados desde el ViewModel
+    val clientes by viewModel.listaClientes.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     var searchText by remember { mutableStateOf("") }
@@ -38,153 +44,132 @@ fun VentasScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Column {
-                        Text(
-                            "Alfa Queso",
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                        Text(
-                            "Ventas",
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
-                        )
+                title = { Text("Ventas", color = Color.White) },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary),
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Regresar", tint = Color.White)
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
+                }
             )
         }
     ) { paddingValues ->
-
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
                 .padding(paddingValues)
+                .padding(16.dp)
         ) {
-
+            // Buscador y Botón de Nueva Venta
             item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface)
-                        .padding(16.dp)
+                OutlinedTextField(
+                    value = searchText,
+                    onValueChange = { searchText = it; viewModel.filtrarVentas(it) },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Buscar venta...") },
+                    leadingIcon = { Icon(Icons.Default.Search, null) },
+                    shape = RoundedCornerShape(8.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { showFormularioVenta = !showFormularioVenta },
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-
-                    Text(
-                        "Historial de Ventas",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    OutlinedTextField(
-                        value = searchText,
-                        onValueChange = {
-                            searchText = it
-                            viewModel.filtrarVentas(it)
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Buscar cliente...") },
-                        leadingIcon = {
-                            Icon(Icons.Default.Search, contentDescription = null)
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        singleLine = true
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    if (!showFormularioVenta) {
-                        Button(
-                            onClick = { showFormularioVenta = true },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary
-                            )
-                        ) {
-                            Icon(Icons.Default.Add, contentDescription = null)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Nueva Venta")
-                        }
-                    }
+                    Text(if (showFormularioVenta) "Cancelar" else "Nueva Venta")
                 }
             }
 
+            // Formulario Desplegable
             item {
                 AnimatedVisibility(
                     visible = showFormularioVenta,
                     enter = expandVertically(),
                     exit = shrinkVertically()
                 ) {
-                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        FormularioNuevaVenta(
-                            onGuardar = { nombre, total, metodo ->
-                                val ventaDto = VentaDto(
-                                    ventaId = 0,
-                                    clienteId = 1,
-                                    nombreCliente = nombre,
-                                    total = total,
-                                    metodoPago = metodo,
-                                    fecha = System.currentTimeMillis().toString(),
-                                    detalles = emptyList()
-                                )
-                                viewModel.registrarNuevaVenta(ventaDto)
-                                showFormularioVenta = false
-                            },
-                            onCancelar = { showFormularioVenta = false }
-                        )
-                    }
+                    FormularioNuevaVenta(
+                        listaClientes = clientes,
+                        onGuardar = { nombre, total, metodo ->
+                            // Formateamos la fecha actual
+                            val fechaActual = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(Date())
+
+                            val nuevaVenta = com.example.alfaqueso.data.remote.dto.VentaDto(
+                                ventaId = 0, // Se autogenera en la BD
+                                clienteId = 0,
+                                nombreCliente = nombre,
+                                total = total,
+                                metodoPago = metodo,
+                                fecha = fechaActual
+                            )
+
+                            // Guardamos la venta
+                            viewModel.registrarNuevaVenta(nuevaVenta)
+                            showFormularioVenta = false
+
+                            // Navegamos al Dashboard y limpiamos la pila
+                            navController.navigate(Screen.Dashboard.route) {
+                                popUpTo(Screen.Ventas.route) { inclusive = true }
+                            }
+                        },
+                        onCancelar = { showFormularioVenta = false }
+                    )
                 }
             }
 
-            when (val estadoActual = uiState) {
+            // Separador visual
+            item { Spacer(modifier = Modifier.height(16.dp)) }
 
-                is VentaUiState.Loading -> {
-                    item {
-                        Box(
-                            Modifier
+            // Lista del Historial de Ventas según el estado
+            when (val state = uiState) {
+                is VentaUiState.Success -> {
+                    items(state.ventas.size) { index ->
+                        val venta = state.ventas[index]
+                        Card(
+                            modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(32.dp),
-                            Alignment.Center
+                                .padding(vertical = 4.dp),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White)
                         ) {
-                            CircularProgressIndicator(
-                                color = MaterialTheme.colorScheme.primary
+                            ListItem(
+                                headlineContent = { Text(venta.nombreCliente, fontWeight = FontWeight.Bold) },
+                                supportingContent = { Text("Total: $${venta.total} • ${venta.metodoPago}\nFecha: ${venta.fecha}") },
+                                leadingContent = {
+                                    Icon(
+                                        Icons.Default.ShoppingCart,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
                             )
                         }
                     }
                 }
-
-                is VentaUiState.Success -> {
-                    if (estadoActual.ventas.isEmpty()) {
-                        item { EmptyView(searchText) }
-                    } else {
-                        items(estadoActual.ventas) { venta ->
-                            VentaCard(venta)
-                            Spacer(modifier = Modifier.height(8.dp))
+                is VentaUiState.Loading -> {
+                    item {
+                        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(modifier = Modifier.padding(16.dp))
                         }
                     }
                 }
-
                 is VentaUiState.Error -> {
                     item {
                         Text(
-                            "Error: ${estadoActual.message}",
+                            text = "Error al cargar las ventas: ${state.message}",
                             color = MaterialTheme.colorScheme.error,
                             modifier = Modifier.padding(16.dp)
                         )
                     }
                 }
-
                 is VentaUiState.Empty -> {
-                    item { EmptyView(searchText) }
+                    item {
+                        Text(
+                            text = "No hay ventas registradas aún. ¡Registra la primera!",
+                            modifier = Modifier.padding(16.dp),
+                            color = Color.Gray
+                        )
+                    }
                 }
-
-                else -> {}
             }
         }
     }
@@ -192,164 +177,115 @@ fun VentasScreen(
 
 @Composable
 fun FormularioNuevaVenta(
+    listaClientes: List<ClienteDto>,
     onGuardar: (String, Double, String) -> Unit,
     onCancelar: () -> Unit
 ) {
     var clienteNombre by remember { mutableStateOf("") }
+    var producto by remember { mutableStateOf("") }
     var totalMonto by remember { mutableStateOf("") }
-    var metodoPago by remember { mutableStateOf("Efectivo") }
-    var showMetodoPagoDropdown by remember { mutableStateOf(false) }
+    var showClienteMenu by remember { mutableStateOf(false) }
 
     Card(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        )
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-
             Text(
-                "Detalles de la Venta",
-                fontWeight = FontWeight.Bold
+                text = "Registrar Nueva Venta",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
             )
+            Spacer(modifier = Modifier.height(12.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
+            // Selector de Cliente con anclaje corregido
+            Text("Cliente", style = MaterialTheme.typography.labelLarge)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentSize(Alignment.TopStart)
+                    .padding(vertical = 8.dp)
+            ) {
+                OutlinedTextField(
+                    value = clienteNombre,
+                    onValueChange = {},
+                    readOnly = true,
+                    placeholder = { Text("Seleccionar cliente...") },
+                    trailingIcon = {
+                        IconButton(onClick = { showClienteMenu = true }) {
+                            Icon(Icons.Default.ArrowDropDown, contentDescription = "Desplegar")
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showClienteMenu = true }
+                )
+
+                DropdownMenu(
+                    expanded = showClienteMenu,
+                    onDismissRequest = { showClienteMenu = false },
+                    modifier = Modifier.fillMaxWidth(0.9f)
+                ) {
+                    if (listaClientes.isEmpty()) {
+                        DropdownMenuItem(
+                            text = { Text("No hay clientes registrados") },
+                            onClick = { showClienteMenu = false }
+                        )
+                    } else {
+                        listaClientes.forEach { cliente ->
+                            DropdownMenuItem(
+                                text = { Text(cliente.nombreNegocio) },
+                                onClick = {
+                                    clienteNombre = cliente.nombreNegocio
+                                    showClienteMenu = false
+                                }
+                            )
+                        }
+                    }
+                }
+            }
 
             OutlinedTextField(
-                value = clienteNombre,
-                onValueChange = { clienteNombre = it },
-                label = { Text("Nombre del Cliente") },
+                value = producto,
+                onValueChange = { producto = it },
+                label = { Text("Producto (Ej. Queso de Freír)") },
                 modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = totalMonto,
                 onValueChange = { totalMonto = it },
-                label = { Text("Monto Total (RD$)") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                label = { Text("Total Cobrado") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            Box {
-                OutlinedTextField(
-                    value = metodoPago,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Método de Pago") },
-                    trailingIcon = {
-                        IconButton(onClick = { showMetodoPagoDropdown = true }) {
-                            Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Button(
+                    onClick = {
+                        val montoFinal = totalMonto.toDoubleOrNull() ?: 0.0
+                        if (clienteNombre.isNotBlank() && montoFinal > 0) {
+                            onGuardar(clienteNombre, montoFinal, "Efectivo")
                         }
                     },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                DropdownMenu(
-                    expanded = showMetodoPagoDropdown,
-                    onDismissRequest = { showMetodoPagoDropdown = false }
+                    modifier = Modifier.weight(1f)
                 ) {
-                    listOf("Efectivo", "Transferencia", "Crédito").forEach {
-                        DropdownMenuItem(
-                            text = { Text(it) },
-                            onClick = {
-                                metodoPago = it
-                                showMetodoPagoDropdown = false
-                            }
-                        )
-                    }
+                    Text("Guardar")
                 }
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row {
                 OutlinedButton(
                     onClick = onCancelar,
                     modifier = Modifier.weight(1f)
                 ) {
                     Text("Cancelar")
                 }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                Button(
-                    onClick = {
-                        val total = totalMonto.toDoubleOrNull() ?: 0.0
-                        if (clienteNombre.isNotEmpty() && total > 0) {
-                            onGuardar(clienteNombre, total, metodoPago)
-                        }
-                    },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Text("Guardar")
-                }
             }
         }
-    }
-}
-
-@Composable
-fun VentaCard(venta: VentaDto) {
-    Card(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        )
-    ) {
-        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-
-            Icon(
-                Icons.Default.ReceiptLong,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
-            )
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(Modifier.weight(1f)) {
-                Text(venta.nombreCliente, fontWeight = FontWeight.Bold)
-                Text(
-                    venta.metodoPago,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            Text(
-                "RD$ ${venta.total}",
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.secondary
-            )
-        }
-    }
-}
-
-@Composable
-fun EmptyView(searchText: String) {
-    Column(
-        modifier = Modifier.fillMaxWidth().padding(64.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        Icon(
-            Icons.Default.Inbox,
-            contentDescription = null,
-            modifier = Modifier.size(64.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            if (searchText.isEmpty())
-                "No hay ventas registradas"
-            else
-                "No se encontraron resultados",
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }

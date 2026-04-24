@@ -25,8 +25,6 @@ interface ProductoDao {
     @Query("SELECT * FROM tabla_productos")
     fun obtenerProductos(): Flow<List<ProductoEntity>>
 
-//    @Query("SELECT * FROM tabla_productos")
-//    fun obtenerTodoElInventario(): Flow<List<Inventario>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun guardarProductos(productos: List<ProductoEntity>)

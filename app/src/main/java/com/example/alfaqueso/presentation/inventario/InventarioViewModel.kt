@@ -2,6 +2,7 @@ package com.example.alfaqueso.presentation.inventario
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.alfaqueso.data.local.dao.InventarioDao
 import com.example.alfaqueso.data.mapper.toDto
 import com.example.alfaqueso.domain.repository.InventarioRepository
 import com.example.alfaqueso.data.remote.dto.InventarioDto
@@ -21,6 +22,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class InventarioViewModel @Inject constructor(
+    private val dao: InventarioDao,
     private val repository: InventarioRepository,
     private val upSertProductoUseCase: UpSertProductoUseCase,
     private val obtenerProductosUseCase: ObtenerProductosUseCase

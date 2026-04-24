@@ -6,10 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-/**
- * Caso de uso para obtener el historial de ventas.
- * Se encarga de traer la lista y puede ordenarla por fecha.
- */
+
 class GetVentasUseCase @Inject constructor(
     private val repository: VentasRepository
 ) {

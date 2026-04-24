@@ -19,13 +19,11 @@ class VentasRepositoryImpl @Inject constructor(
 
     override fun obtenerHistorialVentas(): Flow<List<Venta>> {
         return dao.obtenerHistorialVentas().map { entidades: List<VentaEntity> ->
-            // Le decimos explícitamente que cada 'it' es una VentaEntity
             entidades.map { entidad: VentaEntity -> entidad.toDomain() }
         }
     }
 
     override suspend fun registrarVenta(venta: Venta) {
-        // Aquí forzamos el uso del mapper de Venta a Entity
         dao.registrarVenta(venta.toEntity())
     }
 
@@ -37,7 +35,6 @@ class VentasRepositoryImpl @Inject constructor(
                 val idsSincronizados = mutableListOf<Int>()
 
                 for (ventaEntity in ventasPendientes) {
-                    // Convertimos la entidad a dominio y luego a DTO para Azure
                     val ventaDominio: Venta = ventaEntity.toDomain()
                     api.registrarVentaEnNube(ventaDominio.toDto())
 
